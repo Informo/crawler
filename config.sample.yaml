@@ -1,0 +1,50 @@
+# General settings that will be applied to all crawlers.
+crawler:
+  # The user agent to use when discovering the website. It is advised to indicate
+  # what the programm is and where it comes from via this setting.
+  user_agent: "Mozilla/5.0 (compatible; Informo Crawler/1.0; +https://informo.network)"
+  # The user agent to use when retrieving the robots.txt file on a website.
+  robot_agent: "Informo Crawler"
+  # The delay between two requests on a website. Note that, if a website uses
+  # the "Crawl-delay" setting in its robots.txt file, this setting will be
+  # substitued with the one defined in the robots.txt file.
+  crawl_delay: 1
+
+# Description of the websites to crawl. Each website in this configuration file
+# will be discovered using a different crawler, and all crawlers will run in
+# parallel.
+websites:
+  # An identifier for the website. It is advised to use only alpha-numerical
+  # identifiers, even though everything should work fine.
+  - identifier: acmenews
+    # The URL the crawler should start discovering the website from.
+    start_point: http://acmenews.tld/
+    # The different CSS selectors matching each element of a news item on
+    # the website.
+    selectors:
+      # The CSS selector matching the news item's title.
+      title: "#main-article h1"
+      # The CSS selector matching the news item's description. Optional.
+      description: "#main-article #description"
+      # The CSS selector matching the news item's content.
+      content: "#main-article #content"
+      # The CSS selector matching the news item's author. Optional.
+      author: "#main-article #author"
+      # The CSS selector matching the news item's date.
+      date: "#main-article time"
+      # The CSS selector matching the news item's thumbnail. If provided, and a
+      # thumbnail is found in an item, it will be prepended to the item's content.
+      # It should always refer to an <img.../> node. Optional.
+      thumbnail: "#main-article img.thumbnail"
+    # The format of the date as it is displayed on the website. It is used for
+    # parsing the news items' dates. It should always refer to January 2nd, 2006.
+    # See the layout info on https://godoc.org/time#Parse for more information.
+    date_format: "01-02-2006"
+    # Maximum number of requests sent to a website in a single run of the crawler,
+    # without taking into account the request made to fetch the robots.txt file.
+    # If not provided, or set to 0, doesn't limit the number of requests. Optional.
+    max_visits: 200
+
+# Connection string to the PostgreSQL database. See https://godoc.org/github.com/lib/pq
+# for more information on how it is constructed.
+database: "postgres://informocrawler:itsasecret@localhost/informocrawler?sslmode=disable"
