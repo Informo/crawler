@@ -24,11 +24,21 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// FeedType represents the type of the feed: either RSS or Atom.
+type FeedType int
+
+// The various kind of feed types
+const (
+	FeedTypeRSS = iota
+	FeedTypeAtom
+)
+
 // Config represents the overall architecture of the configuration file.
 type Config struct {
-	Crawler  CrawlerConfig `yaml:"crawler"`
-	Websites []*Website    `yaml:"websites"`
-	Database string        `yaml:"database"`
+	Crawler     CrawlerConfig `yaml:"crawler"`
+	Websites    []*Website    `yaml:"websites"`
+	Database    string        `yaml:"database"`
+	FeedsConfig FeedsConfig   `yaml:"feeds"`
 }
 
 // CrawlerConfig represents the specific configuration for the crawler, which
@@ -58,6 +68,39 @@ type CSSSelectors struct {
 	Author      string `yaml:"author,omitempty"`
 	Date        string `yaml:"date"`
 	Thumbnail   string `yaml:"thumbnail,omitempty"`
+}
+
+// FeedsConfig represents the configuration of the feeds exposed by the RSS
+// generator.
+type FeedsConfig struct {
+	Type FeedType
+}
+
+// UnmarshalYAML detects the type of feed and sets the right value into the
+// FeedsConfig instance.
+// Returns an error if decoding the YAML configuration failed, or if the provided
+// type is invalid (ie neither "rss" nor "atom").
+func (fc *FeedsConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var cfg struct {
+		Type string `yaml:"type"`
+	}
+
+	if err := unmarshal(&cfg); err != nil {
+		return err
+	}
+
+	switch cfg.Type {
+	case "rss":
+		fc.Type = FeedTypeRSS
+		break
+	case "atom":
+		fc.Type = FeedTypeAtom
+		break
+	default:
+		return fmt.Errorf("Invalid feed type: %s", cfg.Type)
+	}
+
+	return nil
 }
 
 // Load reads the configuration file located at a given path and loads it into
