@@ -35,10 +35,10 @@ const (
 
 // Config represents the overall architecture of the configuration file.
 type Config struct {
-	Crawler     CrawlerConfig `yaml:"crawler"`
-	Websites    []*Website    `yaml:"websites"`
-	Database    string        `yaml:"database"`
-	FeedsConfig FeedsConfig   `yaml:"feeds"`
+	Crawler     CrawlerConfig  `yaml:"crawler"`
+	Websites    []*Website     `yaml:"websites"`
+	Database    DatabaseConfig `yaml:"database"`
+	FeedsConfig FeedsConfig    `yaml:"feeds"`
 }
 
 // CrawlerConfig represents the specific configuration for the crawler, which
@@ -68,6 +68,13 @@ type CSSSelectors struct {
 	Author      string `yaml:"author,omitempty"`
 	Date        string `yaml:"date"`
 	Thumbnail   string `yaml:"thumbnail,omitempty"`
+}
+
+// DatabaseConfig represents the needed configuration to talk to the database.
+// There's two supported drivers: "postgres" and "sqlite3".
+type DatabaseConfig struct {
+	DriverName     string `yaml:"driver"`
+	ConnectionData string `yaml:"connection_data"`
 }
 
 // FeedsConfig represents the configuration of the feeds exposed by the RSS
@@ -128,6 +135,12 @@ func Load(filePath string) (cfg *Config, err error) {
 			)
 			return
 		}
+	}
+
+	// Check if the database driver is supported.
+	if cfg.Database.DriverName != "postgres" && cfg.Database.DriverName != "sqlite3" {
+		err = fmt.Errorf("Unsupported database driver %s", cfg.Database.DriverName)
+		return
 	}
 
 	return

@@ -21,8 +21,11 @@ import (
 	"net/url"
 	"time"
 
-	// PostgreSQL driver
+	"common/config"
+
+	// Database drivers
 	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // Database represents the crawler's database.
@@ -36,10 +39,10 @@ type Database struct {
 // and preparing the different statements used.
 // Returns an error if there was an issue opening the database or preparing the
 // different statements.
-func NewDatabase(connStr string) (database *Database, err error) {
+func NewDatabase(cfg config.DatabaseConfig) (database *Database, err error) {
 	database = new(Database)
 
-	if database.db, err = sql.Open("postgres", connStr); err != nil {
+	if database.db, err = sql.Open(cfg.DriverName, cfg.ConnectionData); err != nil {
 		return
 	}
 	if err = database.articles.prepare(database.db); err != nil {
