@@ -19,8 +19,8 @@ import (
 	"fmt"
 	"time"
 
-	"informo-crawler/config"
-	"informo-crawler/database"
+	"common/config"
+	"common/database"
 
 	"github.com/PuerkitoBio/gocrawl"
 	"github.com/sirupsen/logrus"

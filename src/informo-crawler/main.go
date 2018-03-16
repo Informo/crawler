@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"sync"
 
-	"informo-crawler/config"
+	"common/config"
+	"common/database"
 	"informo-crawler/crawler"
-	"informo-crawler/database"
 
 	"github.com/sirupsen/logrus"
 )
