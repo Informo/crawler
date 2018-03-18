@@ -83,15 +83,38 @@ func (e *Extender) Filter(ctx *gocrawl.URLContext, isVisited bool) bool {
 	// is passed along all functions, removing the fragment here will ensure it
 	// will be removed at every other point in the work flow (i.e. we won't save
 	// an article's URL with a fragment part in the database).
-	// If required by the configuration file, also remove the query (?foo=bar)
-	// part of the URL.
 	ctx.URL().Fragment = ""
-	if e.website.IgnoreQuery {
-		ctx.URL().RawQuery = ""
+
+	// If required by the configuration, iterate over the keys from the query
+	// (?foo=bar) part of the URL to only keep the ones set as exceptions.
+	if e.website.Query != nil && e.website.Query.IgnoreAll && len(e.website.Query.Except) > 0 {
+		q := ctx.URL().Query()
+		// Iterate over the query keys.
+		for k := range q {
+			var del = true
+			// Iterate over the exceptions.
+			for _, exception := range e.website.Query.Except {
+				if k == exception {
+					del = false
+				}
+			}
+
+			// If the key doesn't match any of the exceptions, delete it
+			// along with its value.
+			if del {
+				q.Del(k)
+			}
+		}
+
+		// Apply the updated query string to the URL. For the same reason as
+		// the one already explained above, changing the query string here will
+		// also change it for all of the following steps of the crawling process.
+		ctx.URL().RawQuery = q.Encode()
 	}
-	// Check if the fragmentless URL matches the URL of an article that has
-	// already been saved in the database. Only check if the URL is in the map,
-	// we don't actually care about the value attached.
+
+	// Check if the fragmentless (and possibly queryless) URL matches the URL of
+	// an article that has already been saved in the database. Only check if the
+	// URL is in the map, we don't actually care about the value attached.
 	_, inMap := e.visitedArticles[ctx.URL().String()]
 
 	// Check if the URL matches with the exclude and restrict filters. To be

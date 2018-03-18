@@ -44,12 +44,19 @@ websites:
     # without taking into account the request made to fetch the robots.txt file.
     # If not provided, or set to 0, doesn't limit the number of requests. Optional.
     max_visits: 200
-    # If set to true, ignore the query part (i.e. the "?foo=bar&baz=qux") of every
-    # URL. This means that, if http://example.tld/news?item=42 has already been
-    # visited (or queued for visiting) by the crawler, it will ignore both
-    # http://example.tld/news?item=314 and http://example.tld/news because it will
-    # see all of them as the same URL. Optional.
-    ignore_query: true
+    # How to handle the query part (i.e. the "?foo=bar&baz=qux" part) of the URL.
+    # Optional.
+    query:
+      # If set to true, ignore the query part of every URL. This means that, if
+      # http://example.tld/news?item=42 has already been visited (or queued for
+      # visiting) by the crawler, it will ignore both http://example.tld/news?item=314
+      # and http://example.tld/news because it will see all of them as the same URL.
+      # Required if the "query" parent is present in the configuration file.
+      ignore_all: true
+      # Exceptions to the "ignore_all" parameter. Optional.
+      except:
+        news
+        item
     # Regular expressions to restrict the amount of pages the crawler will visit
     # and therefore speed up the whole process. Optional.
     filters:

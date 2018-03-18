@@ -53,13 +53,20 @@ type CrawlerConfig struct {
 // Website represents the configuration needed to describe a website a crawler
 // will explore.
 type Website struct {
-	Identifier  string       `yaml:"identifier"`
-	StartPoint  string       `yaml:"start_point"`
-	Selectors   CSSSelectors `yaml:"selectors"`
-	DateFormat  string       `yaml:"date_format"`
-	MaxVisits   int          `yaml:"max_visits,omitempty"`
-	IgnoreQuery bool         `yaml:"ignore_query,omitempty"`
-	Filters     CrawlFilters `yaml:"filters,omitempty"`
+	Identifier string        `yaml:"identifier"`
+	StartPoint string        `yaml:"start_point"`
+	Selectors  CSSSelectors  `yaml:"selectors"`
+	DateFormat string        `yaml:"date_format"`
+	MaxVisits  int           `yaml:"max_visits,omitempty"`
+	Query      *QueryConfig  `yaml:"ignore,omitempty"`
+	Filters    *CrawlFilters `yaml:"filters,omitempty"`
+}
+
+// QueryConfig represents the configuration needed in the case a crawler needs
+// to discard all query keys except a few when filtering.
+type QueryConfig struct {
+	IgnoreAll bool     `yaml:"ignore_all"`
+	Except    []string `yaml:"except,omitempty"`
 }
 
 // CrawlFilters represents the filters to apply when crawling a website.
