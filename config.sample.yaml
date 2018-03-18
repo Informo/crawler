@@ -45,6 +45,15 @@ websites:
     # If not provided, or set to 0, doesn't limit the number of requests. Optional.
     max_visits: 200
 
-# Connection string to the PostgreSQL database. See https://godoc.org/github.com/lib/pq
-# for more information on how it is constructed.
-database: "postgres://informocrawler:itsasecret@localhost/informocrawler?sslmode=disable"
+# Connection settings to the database. Currently both SQLite and PostgreSQL are
+# supported.
+database:
+  # Name of the database driver. Current supported value are "postgres" and
+  # "sqlite3".
+  driver: "postgres"
+  # String containing the informations required for the driver to connect to the
+  # database. If the driver is "postgres", see https://godoc.org/github.com/lib/pq
+  # for more information on how it is constructed. If the driver is "sqlite3",
+  # the string is the path to the database file (it will be created if it doesn't
+  # exist).
+  connection_data: "postgres://informocrawler:itsasecret@localhost/informocrawler?sslmode=disable"
