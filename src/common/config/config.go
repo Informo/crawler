@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
+	"regexp"
 	"time"
 
 	"gopkg.in/yaml.v2"
@@ -52,11 +53,53 @@ type CrawlerConfig struct {
 // Website represents the configuration needed to describe a website a crawler
 // will explore.
 type Website struct {
-	Identifier string       `yaml:"identifier"`
-	StartPoint string       `yaml:"start_point"`
-	Selectors  CSSSelectors `yaml:"selectors"`
-	DateFormat string       `yaml:"date_format"`
-	MaxVisits  int          `yaml:"max_visits,omitempty"`
+	Identifier  string       `yaml:"identifier"`
+	StartPoint  string       `yaml:"start_point"`
+	Selectors   CSSSelectors `yaml:"selectors"`
+	DateFormat  string       `yaml:"date_format"`
+	MaxVisits   int          `yaml:"max_visits,omitempty"`
+	IgnoreQuery bool         `yaml:"ignore_query,omitempty"`
+	Filters     CrawlFilters `yaml:"filters,omitempty"`
+}
+
+// CrawlFilters represents the filters to apply when crawling a website.
+type CrawlFilters struct {
+	Restrict *regexp.Regexp `yaml:"restrict,omitempty"`
+	Exclude  *regexp.Regexp `yaml:"exclude,omitempty"`
+}
+
+// UnmarshalYAML parses the regexps specified as filters and prepare them to be
+// used when filtering the crawlers queues.
+// Returns an error if there was an issue parsing the YAML source or parsing one
+// of the regexps.
+func (c *CrawlFilters) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var cfg struct {
+		Restrict string `yaml:"restrict,omitempty"`
+		Exclude  string `yaml:"exclude,omitempty"`
+	}
+
+	if err := unmarshal(&cfg); err != nil {
+		return err
+	}
+
+	// All filters are optional, so we need to make sure one has been filled
+	// before trying to parse it.
+	if len(cfg.Restrict) > 0 {
+		restrict, err := regexp.Compile(cfg.Restrict)
+		if err != nil {
+			return err
+		}
+		c.Restrict = restrict
+	}
+	if len(cfg.Exclude) > 0 {
+		exclude, err := regexp.Compile(cfg.Exclude)
+		if err != nil {
+			return err
+		}
+		c.Exclude = exclude
+	}
+
+	return nil
 }
 
 // CSSSelectors represents the CSS selectors used to locate the different

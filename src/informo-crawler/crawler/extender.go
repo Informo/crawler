@@ -83,12 +83,29 @@ func (e *Extender) Filter(ctx *gocrawl.URLContext, isVisited bool) bool {
 	// is passed along all functions, removing the fragment here will ensure it
 	// will be removed at every other point in the work flow (i.e. we won't save
 	// an article's URL with a fragment part in the database).
+	// If required by the configuration file, also remove the query (?foo=bar)
+	// part of the URL.
 	ctx.URL().Fragment = ""
+	if e.website.IgnoreQuery {
+		ctx.URL().RawQuery = ""
+	}
 	// Check if the fragmentless URL matches the URL of an article that has
-	// already been saved in the database. Only checks if the URL is in the map,
+	// already been saved in the database. Only check if the URL is in the map,
 	// we don't actually care about the value attached.
 	_, inMap := e.visitedArticles[ctx.URL().String()]
-	return !isVisited && !inMap
+
+	// Check if the URL matches with the exclude and restrict filters. To be
+	// accepted, a URL must pass the restrict filter and not pass the exclude one.
+	// If no filter is specified, we consider the link as passing by default.
+	var matchRestrict, matchExclude = true, false
+	if e.website.Filters.Restrict != nil {
+		matchRestrict = e.website.Filters.Restrict.MatchString(ctx.URL().String())
+	}
+	if e.website.Filters.Exclude != nil {
+		matchExclude = e.website.Filters.Exclude.MatchString(ctx.URL().String())
+	}
+
+	return !isVisited && !inMap && (matchRestrict && !matchExclude)
 }
 
 // Visit implements gocrawl.Extender.Visit
