@@ -87,15 +87,18 @@ func (e *Extender) Filter(ctx *gocrawl.URLContext, isVisited bool) bool {
 
 	// If required by the configuration, iterate over the keys from the query
 	// (?foo=bar) part of the URL to only keep the ones set as exceptions.
-	if e.website.Query != nil && e.website.Query.IgnoreAll && len(e.website.Query.Except) > 0 {
+	if e.website.Query != nil && len(e.website.Query.Except) > 0 {
 		q := ctx.URL().Query()
 		// Iterate over the query keys.
 		for k := range q {
-			var del = true
+			// If IgnoreAll is set to true, the default behaviour is to delete
+			// every key that doesn't match with an exception. If it is set to
+			// false, the default behaviour is to keep all keys except exceptions.
+			var del = e.website.Query.IgnoreAll
 			// Iterate over the exceptions.
 			for _, exception := range e.website.Query.Except {
 				if k == exception {
-					del = false
+					del = !e.website.Query.IgnoreAll
 				}
 			}
 

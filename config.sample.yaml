@@ -51,10 +51,11 @@ websites:
       # http://example.tld/news?item=42 has already been visited (or queued for
       # visiting) by the crawler, it will ignore both http://example.tld/news?item=314
       # and http://example.tld/news because it will see all of them as the same URL.
+      # If set to false, it will do the same as if the "query" isn't present,
+      # but can take exceptions (see below).
       # Required if the "query" parent is present.
       ignore_all: true
-      # Exceptions to the "ignore_all" parameter. Only looked at if "ignore_all"
-      # is set to true. Optional.
+      # Exceptions to the "ignore_all" parameter. Optional.
       except:
         news
         item
