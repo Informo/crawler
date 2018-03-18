@@ -63,7 +63,6 @@ func NewCrawler(
 	opts.CrawlDelay = cfg.CrawlDelay * time.Second
 	opts.MaxVisits = website.MaxVisits
 	opts.LogFlags = gocrawl.LogInfo
-	// opts.LogFlags = gocrawl.LogAll
 
 	return &Crawler{
 		Log:     log,
