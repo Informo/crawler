@@ -37,31 +37,58 @@ import (
 // or abort the process.
 type Extender struct {
 	gocrawl.DefaultExtender
-	db        *database.Database
-	website   *config.Website
-	log       *logrus.Entry
-	errChan   chan error
-	abortChan chan string
+	db              *database.Database
+	website         *config.Website
+	log             *logrus.Entry
+	visitedArticles map[string]bool
+	errChan         chan error
+	abortChan       chan string
 }
 
 // NewExtender instantiate an Extender.
+// Returns an error if an issue happened while loading the visited article's URLs
+// from the database.
 func NewExtender(
 	db *database.Database, website *config.Website, log *logrus.Entry,
 	errCh chan error, abortCh chan string,
-) *Extender {
+) (*Extender, error) {
+	// Load the URLs of visited articles from the database so we can use it to
+	// filter the enqueuing process and speed the crawls up.
+	visited, err := db.RetrieveArticleURLsForWebsite(website.Identifier)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Infof("Loaded %d visited URLs for this website", len(visited))
+
+	// Instantiate the extender.
 	return &Extender{
 		DefaultExtender: gocrawl.DefaultExtender{},
 		db:              db,
 		website:         website,
 		log:             log,
+		visitedArticles: visited,
 		errChan:         errCh,
 		abortChan:       abortCh,
-	}
+	}, nil
 }
 
 // Filter implements gocrawl.Extender.Filter
+// Tells the crawler if an URL should be enqueued for visiting, according to
+// whether it has already been visited in the current crawl, or whether it matches
+// the URL of an article that has already been saved in the database.
 func (e *Extender) Filter(ctx *gocrawl.URLContext, isVisited bool) bool {
-	return !isVisited
+	// Remove the fragment (#foobar) part of the URL.
+	// Because the context is a reference here, and because the same reference
+	// is passed along all functions, removing the fragment here will ensure it
+	// will be removed at every other point in the work flow (i.e. we won't save
+	// an article's URL with a fragment part in the database).
+	ctx.URL().Fragment = ""
+	// Check if the fragmentless URL matches the URL of an article that has
+	// already been saved in the database. Only checks if the URL is in the map,
+	// we don't actually care about the value attached.
+	_, inMap := e.visitedArticles[ctx.URL().String()]
+	return !isVisited && !inMap
 }
 
 // Visit implements gocrawl.Extender.Visit

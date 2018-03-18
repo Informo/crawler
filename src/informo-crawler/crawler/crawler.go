@@ -42,14 +42,20 @@ type Crawler struct {
 // the extender will use to raise errors and request the crawl to be terminated,
 // uses all that data to instantiate an Extender. It then uses it and some
 // configuration parameters to instantiate a Crawler.
+// Returns an error if there was an issue instantiating the extender.
 func NewCrawler(
 	cfg config.CrawlerConfig, db *database.Database, website *config.Website,
-) *Crawler {
+) (*Crawler, error) {
 	errChan := make(chan error)
 	endChan := make(chan string)
 
 	log := logrus.WithField("website", website.Identifier)
-	opts := gocrawl.NewOptions(NewExtender(db, website, log, errChan, endChan))
+	// Instantiate the extender and the options.
+	ext, err := NewExtender(db, website, log, errChan, endChan)
+	if err != nil {
+		return nil, err
+	}
+	opts := gocrawl.NewOptions(ext)
 
 	// Fill the necessary options.
 	opts.RobotUserAgent = cfg.RobotAgent
@@ -57,6 +63,7 @@ func NewCrawler(
 	opts.CrawlDelay = cfg.CrawlDelay * time.Second
 	opts.MaxVisits = website.MaxVisits
 	opts.LogFlags = gocrawl.LogInfo
+	// opts.LogFlags = gocrawl.LogAll
 
 	return &Crawler{
 		Log:     log,
@@ -64,7 +71,7 @@ func NewCrawler(
 		website: website,
 		errChan: errChan,
 		endChan: endChan,
-	}
+	}, nil
 }
 
 // Run tells a crawler to start crawling, and watches the channels its extender

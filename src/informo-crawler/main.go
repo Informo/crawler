@@ -60,7 +60,12 @@ func main() {
 	// Spawn a crawler for each website.
 	for i, w := range cfg.Websites {
 		// Instantiate the crawler.
-		crawlers[i] = crawler.NewCrawler(cfg.Crawler, db, w)
+		crawlers[i], err = crawler.NewCrawler(cfg.Crawler, db, w)
+		if err != nil {
+			logrus.WithField("website", w.Identifier).Panic(
+				fmt.Errorf("Failed to instantiate crawler for website: %v", err),
+			)
+		}
 
 		// Increment the sync.WaitGroup's counter.
 		wg.Add(1)
