@@ -81,3 +81,18 @@ database:
   # the string is the path to the database file (it will be created if it doesn't
   # exist).
   connection_data: "postgres://informocrawler:itsasecret@localhost/informocrawler?sslmode=disable"
+
+# Configuration for the feeds generator. Only required for using the feeds generator,
+# else it is optional.
+feeds:
+  # The feed type. Supported types are "rss" and "atom".
+  type: rss
+  # The maximum number of news item you want to display in a website's feed. Items
+  # will be ordered in counter-chronological order. If there are less items in the
+  # database than the number defined here, all items in the database (related to
+  # the website) will be added to the website's feed.
+  nb_items: 20
+  # The interface the feeds will be served at.
+  interface: 127.0.0.1
+  # The port the feeds will be served on.
+  port: 8888
