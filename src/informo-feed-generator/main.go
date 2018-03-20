@@ -41,8 +41,10 @@ func main() {
 		logrus.Panic(fmt.Errorf("Couldn't open database: %s", err.Error()))
 	}
 
+	// Instantiate the Generator.
 	g := generator.NewGenerator(db, cfg.FeedsConfig)
 
+	// Serve the feeds and listen on the configured interface and port.
 	if err = g.SetupAndServe(); err != nil {
 		logrus.Panic(fmt.Errorf("Something went wrong with the web server: %s", err.Error()))
 	}
