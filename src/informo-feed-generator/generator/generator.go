@@ -20,11 +20,11 @@ import (
 type Generator struct {
 	db  *database.Database
 	mux *mux.Router
-	cfg config.FeedsConfig
+	cfg *config.FeedsConfig
 }
 
 // NewGenerator instantiate a new Generator.
-func NewGenerator(db *database.Database, cfg config.FeedsConfig) *Generator {
+func NewGenerator(db *database.Database, cfg *config.FeedsConfig) *Generator {
 	return &Generator{
 		db:  db,
 		mux: mux.NewRouter(),
