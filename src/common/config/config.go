@@ -39,7 +39,7 @@ type Config struct {
 	Crawler     CrawlerConfig  `yaml:"crawler"`
 	Websites    []*Website     `yaml:"websites"`
 	Database    DatabaseConfig `yaml:"database"`
-	FeedsConfig FeedsConfig    `yaml:"feeds"`
+	FeedsConfig *FeedsConfig   `yaml:"feeds,omitempty"`
 }
 
 // CrawlerConfig represents the specific configuration for the crawler, which
