@@ -71,8 +71,8 @@ type QueryConfig struct {
 
 // CrawlFilters represents the filters to apply when crawling a website.
 type CrawlFilters struct {
-	Restrict *regexp.Regexp `yaml:"restrict,omitempty"`
-	Exclude  *regexp.Regexp `yaml:"exclude,omitempty"`
+	Restrict *regexp.Regexp
+	Exclude  *regexp.Regexp
 }
 
 // UnmarshalYAML parses the regexps specified as filters and prepare them to be
@@ -130,16 +130,22 @@ type DatabaseConfig struct {
 // FeedsConfig represents the configuration of the feeds exposed by the RSS
 // generator.
 type FeedsConfig struct {
-	Type FeedType
+	Type      FeedType
+	NbItems   int
+	Interface string
+	Port      int
 }
 
-// UnmarshalYAML detects the type of feed and sets the right value into the
+// UnmarshalYAML detects the type of feed and sets the right values into the
 // FeedsConfig instance.
 // Returns an error if decoding the YAML configuration failed, or if the provided
 // type is invalid (ie neither "rss" nor "atom").
 func (fc *FeedsConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var cfg struct {
-		Type string `yaml:"type"`
+		Type      string `yaml:"type"`
+		NbItems   int    `yaml:"nb_items"`
+		Interface string `yaml:"interface"`
+		Port      int    `yaml:"port"`
 	}
 
 	if err := unmarshal(&cfg); err != nil {
@@ -156,6 +162,10 @@ func (fc *FeedsConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	default:
 		return fmt.Errorf("Invalid feed type: %s", cfg.Type)
 	}
+
+	fc.NbItems = cfg.NbItems
+	fc.Interface = cfg.Interface
+	fc.Port = cfg.Port
 
 	return nil
 }

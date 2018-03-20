@@ -21,6 +21,7 @@ import (
 	"net/url"
 	"time"
 
+	"common"
 	"common/config"
 
 	// Database drivers
@@ -76,4 +77,12 @@ func (d *Database) SaveArticle(
 // Returns an error if the retrieval failed.
 func (d *Database) RetrieveArticleURLsForWebsite(website string) (map[string]bool, error) {
 	return d.articles.selectArticlesURLsForWebsite(website)
+}
+
+// RetrieveNLatestArticlesForWebsite returns a representation of the latest
+// n articles, ordered by date, for a given website, n being a given limit to
+// the set.
+// Returns an error if the retrieval failed.
+func (d *Database) RetrieveNLatestArticlesForWebsite(website string, n int) ([]common.Article, error) {
+	return d.articles.selectArticlesByDateForWebsiteWithLimit(website, n)
 }

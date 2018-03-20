@@ -18,6 +18,8 @@ package database
 import (
 	"database/sql"
 	"time"
+
+	"common"
 )
 
 // Schema of the articles table.
@@ -46,6 +48,13 @@ const selectArticlesURLsForWebsiteSQL = `
 	SELECT url FROM articles WHERE website = $1
 `
 
+// Retrieve all articles filtered by the website they were posted on, ordered by
+// date (in counter-chronological order) and limited to a given number of rows.
+const selectArticlesByDateForWebsiteWithLimitSQL = `
+	SELECT url, title, description, content, author, date
+	FROM articles WHERE website = $1 ORDER BY date DESC LIMIT $2
+`
+
 // Insert a new article in the database.
 const insertArticleSQL = `
 	INSERT INTO articles (website, url, title, description, content, author, date)
@@ -53,8 +62,9 @@ const insertArticleSQL = `
 `
 
 type articlesStatements struct {
-	selectArticlesURLsForWebsiteStmt *sql.Stmt
-	insertArticleStmt                *sql.Stmt
+	selectArticlesURLsForWebsiteStmt            *sql.Stmt
+	selectArticlesByDateForWebsiteWithLimitStmt *sql.Stmt
+	insertArticleStmt                           *sql.Stmt
 }
 
 // Create the table if it doesn't exist and prepare the SQL statements.
@@ -64,6 +74,9 @@ func (a *articlesStatements) prepare(db *sql.DB) (err error) {
 		return
 	}
 	if a.selectArticlesURLsForWebsiteStmt, err = db.Prepare(selectArticlesURLsForWebsiteSQL); err != nil {
+		return
+	}
+	if a.selectArticlesByDateForWebsiteWithLimitStmt, err = db.Prepare(selectArticlesByDateForWebsiteWithLimitSQL); err != nil {
 		return
 	}
 	if a.insertArticleStmt, err = db.Prepare(insertArticleSQL); err != nil {
@@ -124,6 +137,66 @@ func (a *articlesStatements) selectArticlesURLsForWebsite(website string) (urls 
 		}
 
 		urls[url] = true
+	}
+
+	return
+}
+
+// selectArticlesByDateForWebsiteWithLimit returns a representation of the latest
+// n articles, ordered by date, for a given website, n being a given limit to the
+// set.
+// Returns an error if there was an issue performing the query or reading the rows
+// it returned.
+func (a *articlesStatements) selectArticlesByDateForWebsiteWithLimit(website string, limit int) (articles []common.Article, err error) {
+	// Perform the query.
+	rows, err := a.selectArticlesByDateForWebsiteWithLimitStmt.Query(website, limit)
+	if err != nil {
+		return
+	}
+
+	// Initialise the slice.
+	articles = []common.Article{}
+
+	// Declare variables to avoid unnecessary allocations.
+	var article common.Article
+	var url, title, content string
+	var description, author sql.NullString
+	var date time.Time
+	// Iterate over the rows.
+	for rows.Next() {
+		// "Load" content into the variables.
+		if err = rows.Scan(&url, &title, &description, &content, &author, &date); err != nil {
+			return
+		}
+
+		// Initialise the article so we start from a clean base between two iterations.
+		article = common.Article{
+			URL:     url,
+			Title:   title,
+			Content: content,
+			Date:    date,
+		}
+
+		// Fill the description if it's not NULL.
+		if description.Valid {
+			// Re-allocating to be sure the referenced value won't change.
+			descStr := description.String
+			article.Description = &descStr
+		} else {
+			article.Description = nil
+		}
+
+		// Fill the author if it's not NULL.
+		if author.Valid {
+			// Re-allocating to be sure the referenced value won't change.
+			authStr := author.String
+			article.Author = &authStr
+		} else {
+			article.Author = nil
+		}
+
+		// Append the article to the slice.
+		articles = append(articles, article)
 	}
 
 	return
