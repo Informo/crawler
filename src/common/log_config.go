@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package common
 
 import (
 	"github.com/sirupsen/logrus"
@@ -30,11 +30,11 @@ func (f utcFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	return f.Formatter.Format(entry)
 }
 
-// logConfig configures the logrus logger by setting the formatter to an instance
+// LogConfig configures the logrus logger by setting the formatter to an instance
 // of utcFormatter and setting the log level accordingly with the command line
 // arguments.
-func logConfig() {
-	if *debug {
+func LogConfig(debug bool) {
+	if debug {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 

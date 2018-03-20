@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"sync"
 
+	"common"
 	"common/config"
 	"common/database"
 	"informo-crawler/crawler"
@@ -37,7 +38,7 @@ func main() {
 	flag.Parse()
 
 	// Configure the logger.
-	logConfig()
+	common.LogConfig(*debug)
 
 	// Load the configuration from the provided configuration file.
 	cfg, err := config.Load(*configFile)
