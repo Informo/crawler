@@ -124,11 +124,13 @@ func (e *Extender) Filter(ctx *gocrawl.URLContext, isVisited bool) bool {
 	// accepted, a URL must pass the restrict filter and not pass the exclude one.
 	// If no filter is specified, we consider the link as passing by default.
 	var matchRestrict, matchExclude = true, false
-	if e.website.Filters.Restrict != nil {
-		matchRestrict = e.website.Filters.Restrict.MatchString(ctx.URL().String())
-	}
-	if e.website.Filters.Exclude != nil {
-		matchExclude = e.website.Filters.Exclude.MatchString(ctx.URL().String())
+	if e.website.Filters != nil {
+		if e.website.Filters.Restrict != nil {
+			matchRestrict = e.website.Filters.Restrict.MatchString(ctx.URL().String())
+		}
+		if e.website.Filters.Exclude != nil {
+			matchExclude = e.website.Filters.Exclude.MatchString(ctx.URL().String())
+		}
 	}
 
 	return !isVisited && !inMap && (matchRestrict && !matchExclude)
