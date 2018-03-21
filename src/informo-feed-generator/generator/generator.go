@@ -24,9 +24,7 @@ import (
 	"common/config"
 	"common/database"
 
-	// Using our own fork of feeds from now until our PR is accepted and merged
-	// cf https://github.com/gorilla/feeds/pull/43
-	"github.com/Informo/feeds"
+	"github.com/gorilla/feeds"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )

@@ -2,12 +2,6 @@
 	"version": 0,
 	"dependencies": [
 		{
-			"importpath": "github.com/Informo/feeds",
-			"repository": "https://github.com/Informo/feeds",
-			"revision": "2becd57f876a9f1ec55aa053f81e24e5d168d9eb",
-			"branch": "enhancement/content"
-		},
-		{
 			"importpath": "github.com/PuerkitoBio/gocrawl",
 			"repository": "https://github.com/PuerkitoBio/gocrawl",
 			"revision": "3c6275ae0143e4fa9ee522c2d4008d983a2fefaf",
@@ -35,6 +29,12 @@
 			"importpath": "github.com/andybalholm/cascadia",
 			"repository": "https://github.com/andybalholm/cascadia",
 			"revision": "901648c87902174f774fac311d7f176f8647bdaa",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/gorilla/feeds",
+			"repository": "https://github.com/gorilla/feeds",
+			"revision": "6edcbcd2d57fd0bbd7f39947a593ed0c06648388",
 			"branch": "master"
 		},
 		{
