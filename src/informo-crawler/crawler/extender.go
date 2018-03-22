@@ -85,34 +85,41 @@ func (e *Extender) Filter(ctx *gocrawl.URLContext, isVisited bool) bool {
 	// an article's URL with a fragment part in the database).
 	ctx.URL().Fragment = ""
 
-	// If required by the configuration, iterate over the keys from the query
-	// (?foo=bar) part of the URL to only keep the ones set as exceptions.
-	if e.website.Query != nil && len(e.website.Query.Except) > 0 {
-		q := ctx.URL().Query()
-		// Iterate over the query keys.
-		for k := range q {
-			// If IgnoreAll is set to true, the default behaviour is to delete
-			// every key that doesn't match with an exception. If it is set to
-			// false, the default behaviour is to keep all keys except exceptions.
-			var del = e.website.Query.IgnoreAll
-			// Iterate over the exceptions.
-			for _, exception := range e.website.Query.Except {
-				if k == exception {
-					del = !e.website.Query.IgnoreAll
+	if e.website.Query != nil {
+		// If required by the configuration, iterate over the keys from the query
+		// (?foo=bar) part of the URL to only keep the ones set as exceptions,
+		// or remove them, accordingly with the IgnoreAll value.
+		if len(e.website.Query.Except) > 0 {
+			q := ctx.URL().Query()
+			// Iterate over the query keys.
+			for k := range q {
+				// If IgnoreAll is set to true, the default behaviour is to delete
+				// every key that doesn't match with an exception. If it is set to
+				// false, the default behaviour is to keep all keys except exceptions.
+				var del = e.website.Query.IgnoreAll
+				// Iterate over the exceptions.
+				for _, exception := range e.website.Query.Except {
+					if k == exception {
+						del = !e.website.Query.IgnoreAll
+					}
+				}
+
+				// If the key doesn't match any of the exceptions, delete it
+				// along with its value.
+				if del {
+					q.Del(k)
 				}
 			}
 
-			// If the key doesn't match any of the exceptions, delete it
-			// along with its value.
-			if del {
-				q.Del(k)
-			}
+			// Apply the updated query string to the URL. For the same reason as
+			// the one already explained above, changing the query string here will
+			// also change it for all of the following steps of the crawling process.
+			ctx.URL().RawQuery = q.Encode()
+		} else if e.website.Query.IgnoreAll {
+			// If no exception is set, remove all the query string from the URL,
+			// but only if IgnoreAll is set to true.
+			ctx.URL().RawQuery = ""
 		}
-
-		// Apply the updated query string to the URL. For the same reason as
-		// the one already explained above, changing the query string here will
-		// also change it for all of the following steps of the crawling process.
-		ctx.URL().RawQuery = q.Encode()
 	}
 
 	// Check if the fragmentless (and possibly queryless) URL matches the URL of
