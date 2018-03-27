@@ -37,9 +37,9 @@ websites:
       # It should always refer to an <img.../> node. Optional.
       thumbnail: "#main-article img.thumbnail"
     # The format of the date as it is displayed on the website. It is used for
-    # parsing the news items' dates. It should always refer to January 2nd, 2006.
-    # See the layout info on https://godoc.org/time#Parse for more information.
-    date_format: "01-02-2006"
+    # parsing the news items' dates. It contains patterns, an explicit list of
+    # which is included in the project's README.md file.
+    date_format: "{MONTH_NUM}-{DAY_NUM}-{YEAR_LONG}"
     # Maximum number of requests sent to a website in a single run of the crawler,
     # without taking into account the request made to fetch the robots.txt file.
     # If not provided, or set to 0, doesn't limit the number of requests. Optional.
