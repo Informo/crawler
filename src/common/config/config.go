@@ -195,6 +195,8 @@ func Load(filePath string) (cfg *Config, err error) {
 			)
 			return
 		}
+
+		replaceLayoutPatterns(&w.DateFormat)
 	}
 
 	// Check if the database driver is supported.
